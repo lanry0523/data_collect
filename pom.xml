@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>com.dhq</groupId>
-    <artifactId>meituan_data_collect</artifactId>
+    <artifactId>qj_data_collect</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <description>get data from meituan</description>
+    <description>get data from qj</description>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
