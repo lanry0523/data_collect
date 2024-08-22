@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iwhalecloud.data.collect.dao.MtBikeStationInfoDao">
+
+    <insert id="insertRecord"
+            parameterType="com.iwhalecloud.data.collect.domain.MtBikeStationInfo">
+        INSERT INTO mt_bike_station_info
+        (id, bike_station_id, station_lat, station_lon , bike_num, create_time,update_time)
+        VALUES(#{item.id}, #{item.bikeStationId},#{item.stationLat},#{item.stationLon}, #{item.bikeNum},#{item.createTime}, #{item.updateTime})
+    </insert>
+    <update id="updateRecord" parameterType="com.iwhalecloud.data.collect.domain.MtBikeStationInfo">
+        UPDATE mt_bike_station_info
+        SET
+            bike_num=#{item.bikeNum}
+          , update_time=#{item.updateTime}
+        WHERE bike_station_id=#{item.bikeStationId}
+    </update>
+    <select id="queryRecordByBikeId" resultType="com.iwhalecloud.data.collect.domain.MtBikeStationInfo">
+        SELECT id, bike_station_id, station_lat, station_lon , bike_num, create_time,update_time
+        FROM mt_bike_station_info
+        WHERE bike_station_id = #{bikeStationId}
+    </select>
+</mapper>
