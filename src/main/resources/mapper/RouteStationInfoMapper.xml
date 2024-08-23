@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iwhalecloud.data.collect.dao.RouteStationInfoDao">
+
+    <resultMap id="BaseResultMap" type="com.iwhalecloud.data.collect.domain.RouteStationInfo">
+            <id property="routeId" column="route_id" jdbcType="INTEGER"/>
+            <result property="routeName" column="route_name" jdbcType="VARCHAR"/>
+            <result property="routeType" column="route_type" jdbcType="VARCHAR"/>
+            <result property="isHaveSubRouteCombine" column="is_have_sub_route_combine" jdbcType="VARCHAR"/>
+            <result property="routeNameExt" column="route_name_ext" jdbcType="VARCHAR"/>
+            <result property="routeMemo" column="route_memo" jdbcType="VARCHAR"/>
+            <result property="isMainSub" column="is_main_sub" jdbcType="VARCHAR"/>
+            <result property="isBrt" column="is_brt" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        route_id,route_name,route_type,
+        is_have_sub_route_combine,route_name_ext,route_memo,
+        is_main_sub,is_brt
+    </sql>
+
+    <insert id="insertRecord" parameterType="com.iwhalecloud.data.collect.domain.RouteStationInfo">
+        INSERT INTO route_station_info
+        (<include refid="Base_Column_List"></include>)
+        VALUES(#{item.routeId}, #{item.routeName},#{item.routeType},#{item.isHaveSubRouteCombine}, #{item.routeNameExt},#{item.routeMemo}, #{item.isMainSub}, #{item.isBrt})
+    </insert>
+</mapper>

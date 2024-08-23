@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iwhalecloud.data.collect.dao.SegMentInfoDao">
+
+    <resultMap id="BaseResultMap" type="com.iwhalecloud.data.collect.domain.SegMentInfo">
+            <result property="segmentId" column="segment_id" jdbcType="INTEGER"/>
+            <result property="segmentName" column="segment_name" jdbcType="VARCHAR"/>
+            <result property="routeId" column="route_id" jdbcType="INTEGER"/>
+            <result property="firstTime" column="first_time" jdbcType="DATE"/>
+            <result property="lastTime" column="last_time" jdbcType="DATE"/>
+            <result property="routePrice" column="route_price" jdbcType="INTEGER"/>
+            <result property="normalTimeSpan" column="normal_time_span" jdbcType="INTEGER"/>
+            <result property="peakTimeSpan" column="peak_time_span" jdbcType="INTEGER"/>
+            <result property="firtLastShiftInfo" column="firt_last_shift_info" jdbcType="VARCHAR"/>
+            <result property="firtLastShiftInfo2" column="firt_last_shift_info2" jdbcType="VARCHAR"/>
+            <result property="memos" column="memos" jdbcType="VARCHAR"/>
+            <result property="runDirection" column="run_direction" jdbcType="VARCHAR"/>
+            <result property="baiduMapId" column="baidu_map_id" jdbcType="VARCHAR"/>
+            <result property="amapId" column="amap_id" jdbcType="VARCHAR"/>
+            <result property="drawType" column="draw_type" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        segment_id,segment_name,route_id,
+        first_time,last_time,route_price,
+        normal_time_span,peak_time_span,firt_last_shift_info,
+        firt_last_shift_info2,memos,run_direction,
+        baidu_map_id,amap_id,draw_type
+    </sql>
+
+    <insert id="insertRecord" parameterType="com.iwhalecloud.data.collect.domain.SegMentInfo">
+        INSERT INTO route_station_info
+        (<include refid="Base_Column_List"></include>)
+        VALUES( #{item.segmentId},
+                #{item.segmentName},
+                #{item.routeId},
+                #{item.firstTime},
+                #{item.lastTime},
+                #{item.routePrice},
+                #{item.normalTimeSpan},
+                #{item.peakTimeSpan},
+                #{item.firtLastShiftInfo},
+                #{item.firtLastShiftInfo2},
+                #{item.memos},
+                #{item.runDirection},
+                #{item.baiduMapId},
+                #{item.amapId},
+                #{item.drawType}
+            )
+    </insert>
+</mapper>

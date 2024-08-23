@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iwhalecloud.data.collect.dao.SegStationInfoDao">
+
+    <resultMap id="BaseResultMap" type="com.iwhalecloud.data.collect.domain.SegStationInfo">
+            <result property="stationId" column="station_id" jdbcType="VARCHAR"/>
+            <result property="stationName" column="station_name" jdbcType="VARCHAR"/>
+            <result property="segmentId" column="segment_id" jdbcType="INTEGER"/>
+            <result property="stationNo" column="station_no" jdbcType="INTEGER"/>
+            <result property="longitude" column="longitude" jdbcType="DECIMAL"/>
+            <result property="latitude" column="latitude" jdbcType="DECIMAL"/>
+            <result property="stationMemo" column="station_memo" jdbcType="VARCHAR"/>
+            <result property="speed" column="speed" jdbcType="VARCHAR"/>
+            <result property="dualSerial" column="dual_serial" jdbcType="INTEGER"/>
+            <result property="stationSort" column="station_sort" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        station_id,station_name,segment_id,
+        station_no,longitude,latitude,
+        station_memo,speed,dual_serial,
+        station_sort
+    </sql>
+    <insert id="insertRecord" parameterType="com.iwhalecloud.data.collect.domain.SegStationInfo">
+        INSERT INTO route_station_info
+        (<include refid="Base_Column_List"></include>)
+        VALUES( #{item.stationId},
+        #{item.stationName},
+        #{item.segmentId},
+        #{item.stationNo},
+        #{item.longitude},
+        #{item.latitude},
+        #{item.stationMemo},
+        #{item.speed},
+        #{item.dualSerial},
+        #{item.stationSort}
+        )
+    </insert>
+</mapper>
