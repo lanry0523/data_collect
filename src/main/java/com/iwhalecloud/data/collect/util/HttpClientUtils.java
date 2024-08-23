@@ -1,5 +1,6 @@
 package com.iwhalecloud.data.collect.util;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.httpclient.HttpClient;
@@ -14,13 +15,17 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,83 +239,125 @@ public class HttpClientUtils {
         return resultJson;
     }
     /**
-     * 发送一个get请求
-     *
-     * @param url 地址
-     * @return
-     * @throws IOException
+     * @param url    请求地址
+     * @param params 请求实体
+     * @return String
+     * @throws
+     * @throws
+     * @Title: sendPost
+     * @Description: TODO(发送post请求 ， 请求数据默认使用json格式 ， 默认使用UTF - 8编码)
+     * @author wangxy
+     * @date 2018年5月10日 下午6:11:05
      */
-    public static String get(String url) throws IOException {
-        GetMethod method = new GetMethod(url);
-        HttpMethodParams hmp = method.getParams();
+    public static String sendPost(String url, Map<String, Object> params, Integer httpConnectTimeout, Integer httpSocketTimeout, Integer hcRequestTimeout) throws Exception {
+        //如果没值给对象赋值
+        if (httpConnectTimeout == null || httpConnectTimeout.intValue() == 0) {
+            httpConnectTimeout = HTTP_CONNECT_TIMEOUT;
+        }
+        if (httpSocketTimeout == null || httpSocketTimeout.intValue() == 0) {
+            httpSocketTimeout = HTTP_SOCKET_TIMEOUT;
+        }
+        if (hcRequestTimeout == null || hcRequestTimeout.intValue() == 0) {
+            hcRequestTimeout = HTTP_CONNECTION_REQUEST_TIMEOUT;
+        }
+        // 设置默认请求头
+        Map<String, String> headers = new HashMap<>();
+        headers.put("content-type", "application/json");
+        // 将map转成json
+        JSONObject data = JSONObject.parseObject(JSON.toJSONString(params));
+        return sendPost(url, headers, data, httpConnectTimeout, httpSocketTimeout, hcRequestTimeout);
+    }
+    /**
+     * @param url                请求地址
+     * @param headers            请求头
+     * @param data               请求实体
+     * @param httpConnectTimeout 字符集
+     * @return String
+     * @throws
+     * @Title: sendPost
+     * @Description: TODO(发送post请求)
+     * @author wangxy
+     * @date 2018年5月10日 下午4:36:17
+     */
+    public static String sendPost(String url, Map<String, String> headers, JSONObject data, Integer httpConnectTimeout, Integer httpSocketTimeout, Integer hcRequestTimeout) throws Exception {
+        //如果没值给对象赋值
+        if (httpConnectTimeout == null || httpConnectTimeout.intValue() == 0) {
+            httpConnectTimeout = HTTP_CONNECT_TIMEOUT;
+        }
+        if (httpSocketTimeout == null || httpSocketTimeout.intValue() == 0) {
+            httpSocketTimeout = HTTP_SOCKET_TIMEOUT;
+        }
+        if (hcRequestTimeout == null || hcRequestTimeout.intValue() == 0) {
+            hcRequestTimeout = HTTP_CONNECTION_REQUEST_TIMEOUT;
+        }
+        //log.info("进入post请求方法...");
+        //log.info("请求入参：URL= " + url);
+        //log.info("请求入参：headers=" + JSON.toJSONString(headers));
+        //log.info("请求入参：data=" + JSON.toJSONString(data));
+        // 请求返回结果
+        String resultJson = null;
+        // 创建Client
+        CloseableHttpClient client = HttpClients.createDefault();
+        // 创建HttpPost对象
+        HttpPost httpPost = new HttpPost();
 
-        hmp.setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, DEFAULT_CHARSET);
-        hmp.setParameter(HttpMethodParams.SO_TIMEOUT, DEFAULT_TIMEOUT);
+        try {
+            // 设置请求地址
+            httpPost.setURI(new URI(url));
+            // 设置请求头
+            if (headers != null) {
+                Header[] allHeader = new BasicHeader[headers.size()];
+                int i = 0;
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    allHeader[i] = new BasicHeader(entry.getKey(), entry.getValue());
+                    i++;
+                }
+                httpPost.setHeaders(allHeader);
+            }
+            // 设置实体
+            //httpPost.setEntity(new StringEntity(JSON.toJSONString(data)));
+            httpPost.setEntity(new StringEntity(JSON.toJSONString(data), CONTENT_TYPE_FORM, DEFAULT_CHARSET));
+            // 超时时间设置
+            RequestConfig config = RequestConfig.custom().setSocketTimeout(httpSocketTimeout).setConnectTimeout(httpConnectTimeout).setConnectionRequestTimeout(hcRequestTimeout).build();
+            //.setConnectionRequestTimeout(HTTP_CONNECTION_REQUEST_TIMEOUT).build();
+            httpPost.setConfig(config);
+            // 发送请求,返回响应对象
+            CloseableHttpResponse response = client.execute(httpPost);
+            // 获取响应状态
+            int status = response.getStatusLine().getStatusCode();
+            if (status == org.apache.http.HttpStatus.SC_OK) {
+                // 获取响应结果
+                resultJson = EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET);
+            } else {
+                log.error("响应失败，状态码：" + status);
+                log.error("响应失败：" + EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET));
+            }
 
-        return executeMethod(method);
+        } catch (Exception e) {
+            //log.error("发送post请求失败", e);
+            e.printStackTrace();
+
+        } finally {
+            httpPost.releaseConnection();
+        }
+        return resultJson;
     }
 
-
-    public static String sendGet(String url, Map<String, String> parameters) {
-        String result = "";
-        BufferedReader in = null;// 读取响应输入流
-        StringBuffer sb = new StringBuffer();// 存储参数
-        String params = "";// 编码之后的参数
-        try {
-            // 编码请求参数
-            if (parameters.size() == 1) {
-                for (String name : parameters.keySet()) {
-                    sb.append(name).append("=").append(java.net.URLEncoder.encode(parameters.get(name), "UTF-8"));
-                }
-                params = sb.toString();
-            } else {
-                for (String name : parameters.keySet()) {
-                    sb.append(name).append("=").append(java.net.URLEncoder.encode(parameters.get(name), "UTF-8")).append("&");
-                }
-                String temp_params = sb.toString();
-                params = temp_params.substring(0, temp_params.length() - 1);
-            }
-            String full_url = url + "?" + params;
-            System.out.println(full_url);
-            // 创建URL对象
-            java.net.URL connURL = new java.net.URL(full_url);
-            // 打开URL连接
-            java.net.HttpURLConnection httpConn = (java.net.HttpURLConnection) connURL.openConnection();
-            // 设置通用属性
-            httpConn.setRequestProperty("Accept", "*/*");
-            httpConn.setRequestProperty("Connection", "Keep-Alive");
-            httpConn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)");
-            // 建立实际的连接
-            httpConn.connect();
-            // 响应头部获取
-            Map<String, List<String>> headers = httpConn.getHeaderFields();
-            // 遍历所有的响应头字段
-            for (String key : headers.keySet()) {
-                System.out.println(key + "\t：\t" + headers.get(key));
-            }
-            // 定义BufferedReader输入流来读取URL的响应,并设置编码方式
-            in = new BufferedReader(new InputStreamReader(httpConn.getInputStream(), "UTF-8"));
-            String line;
-            // 读取返回的内容
-            while ((line = in.readLine()) != null) {
-                result += line;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return result;
+    public static Map<String, Object> getParams(){
+        Map<String, Object> params = new HashMap<>();
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss", Locale.CHINA);
+        String timeStamp = df.format(new Date());
+        String randomValue = "" + (int) (100 + Math.random() * (999 - 100 + 1));
+        String signKe = EncryptHelper.SignUp("943a871e607611efa459ad3f1a49204d",timeStamp+ randomValue);
+        params.put("TimeStamp", timeStamp);
+        params.put("Random", randomValue);
+        params.put("SignKey", signKe);
+        params.put("PackageName","com.hengqin");
+        return params;
     }
 
     public static void main(String[] args) throws Exception {
-        String url = "http://cloud.tiamaes.com:17570/BusService/Query_AllSubRouteData/";
+        String url = "http://120.238.166.245:62100/BusService/Query_AllSubRouteData/";
         Map<String, Object> params = new HashMap<>();
 
 
@@ -326,7 +373,8 @@ public class HttpClientUtils {
         log.debug(timeStamp);
         log.debug(randomValue);
         //String s1 = get(url + "?TimeStamp="+timeStamp+"&Random="+randomValue+"&signKey="+signKe+"PackageName=com.hengqin");
-        String s = sendGet(url, params,HTTP_CONNECT_TIMEOUT,HTTP_SOCKET_TIMEOUT,HTTP_CONNECTION_REQUEST_TIMEOUT);
+        //String s = sendGet(url, params,HTTP_CONNECT_TIMEOUT,HTTP_SOCKET_TIMEOUT,HTTP_CONNECTION_REQUEST_TIMEOUT);
+        String s = sendPost(url, params,HTTP_CONNECT_TIMEOUT,HTTP_SOCKET_TIMEOUT,HTTP_CONNECTION_REQUEST_TIMEOUT);
         log.debug(s);
     }
 }

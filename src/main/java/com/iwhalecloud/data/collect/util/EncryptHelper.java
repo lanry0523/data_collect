@@ -3,6 +3,10 @@ package com.iwhalecloud.data.collect.util;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Calendar;
 
 public class EncryptHelper {
     /**
@@ -34,5 +38,55 @@ public class EncryptHelper {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // 加密算法
+    public static String EncryptCodeString(String code) {
+        StringBuffer sb = new StringBuffer();
+        //（将每个字符按照 ASCII 码增加当前日期为当月第几天然后减掉当前日期为星期的第几天后得到新字符串）
+        // 当前日期从 1 开始计算，当前星期第几天从周天开始，周天为 0
+        Calendar today = Calendar.getInstance();
+        int w = today.get(Calendar.DAY_OF_WEEK) - 1;
+        int d = today.get(Calendar.DAY_OF_MONTH);
+        int num = (int) (d - w);
+        if (num <= 10) {
+            num += 7;
+        }
+        for (int i = 0; i < code.length(); i++) {
+            char c = code.charAt(i);
+            char temp = (char) ((int) (c) + num);
+            sb.append(temp);
+        }
+        String result = sb.toString();
+        try {
+            result = URLEncoder.encode(result, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+    // 解密算法：
+    public static String UnEncryptCodeString(String code) {
+        try {
+            code = URLDecoder.decode(code, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        StringBuffer sb = new StringBuffer();
+        //（将每个字符按照 ASCII 码增加当前日期为当月第几天然后减掉当前日期为星期的第几天后得到新字符串）
+        // 当前日期从 1 开始计算，当前星期第几天从周天开始，周天为 0
+        Calendar today = Calendar.getInstance();
+        int w = today.get(Calendar.DAY_OF_WEEK) - 1;
+        int d = today.get(Calendar.DAY_OF_MONTH);
+        int num = (int) (d - w);
+        if (num <= 10) {
+            num += 7;
+        }
+        for (int i = 0; i < code.length(); i++) {
+            char c = code.charAt(i);
+            char temp = (char) ((int) (c) - num);
+            sb.append(temp);
+        }
+        return sb.toString();
     }
 }
