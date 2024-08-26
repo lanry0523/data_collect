@@ -1,14 +1,20 @@
 package com.iwhalecloud.data.collect.util;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Calendar;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class EncryptHelper {
+    private static final Logger log = LoggerFactory.getLogger(EncryptHelper.class);
+
     /**
      * 签名算法
      */
@@ -88,5 +94,14 @@ public class EncryptHelper {
             sb.append(temp);
         }
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        String s = EncryptHelper.EncryptCodeString("12343333");
+        String s1 = EncryptHelper.UnEncryptCodeString(s);
+        log.info(s);
+        log.info(s1);
+
+
     }
 }
