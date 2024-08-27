@@ -478,6 +478,9 @@ public class HttpClientUtils {
                                         ssfInfo.setStationNo(ss.getStationNO());
                                         ssfInfo.setStationSort(ss.getStationSort());
                                         ssf.add(ssfInfo);
+
+                                        //站点id,线路id,单程Id,关联关系表
+
                                     }
                                 }
                             }
