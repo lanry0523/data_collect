@@ -1,54 +1,53 @@
-package com.iwhalecloud.data.collect.domain;
+package com.iwhalecloud.data.collect.domain.response;
 
 
+import com.iwhalecloud.data.collect.domain.SegMentInfo;
 import lombok.Data;
 
-
-import java.io.Serializable;
 import java.util.List;
 
 
 @Data
-public class RouteStationInfo  {
+public class RouteStationInfoRep {
     /**
      * 线路ID
      */
-    private Integer routeId;
+    private Integer RouteID;
 
     /**
      * 线路名称
      */
-    private String routeName;
+    private String RouteName;
 
     /**
      * 线路类型
      */
-    private String routeType;
+    private String RouteType;
 
     /**
      * 是否经过合并（1：是，0：否）
      */
-    private String isHaveSubRouteCombine;
+    private String RsHaveSubRouteCombine;
 
     /**
      * 线路名称扩展
      */
-    private String routeNameExt;
+    private String RouteNameExt;
 
     /**
      * 线路备注
      */
-    private String routeMemo;
+    private String RouteMemo;
 
     /**
      * 是否主子线（1 是，2 无法合并的子线，0 可以合并的子线）
      */
-    private String isMainSub;
+    private String Ismainsub;
 
     /**
      * 是否快车
      */
-    private String isBrt;
+    private String IsBRT;
 
-
+    private List<SegMentInfoRep> SegmentList;
 }

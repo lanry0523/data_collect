@@ -31,7 +31,7 @@
     </sql>
 
     <insert id="insertRecord" parameterType="com.iwhalecloud.data.collect.domain.SegMentInfo">
-        INSERT INTO route_station_info
+        INSERT INTO seg_ment_info
         (<include refid="Base_Column_List"></include>)
         VALUES( #{item.segmentId},
                 #{item.segmentName},
@@ -49,5 +49,29 @@
                 #{item.amapId},
                 #{item.drawType}
             )
+    </insert>
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO seg_ment_info
+        (<include refid="Base_Column_List"></include>)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.segmentId},
+            #{item.segmentName},
+            #{item.routeId},
+            #{item.firstTime},
+            #{item.lastTime},
+            #{item.routePrice},
+            #{item.normalTimeSpan},
+            #{item.peakTimeSpan},
+            #{item.firtLastShiftInfo},
+            #{item.firtLastShiftInfo2},
+            #{item.memos},
+            #{item.runDirection},
+            #{item.baiduMapId},
+            #{item.amapId},
+            #{item.drawType}
+            )
+        </foreach>
     </insert>
 </mapper>

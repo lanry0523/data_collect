@@ -26,4 +26,14 @@
         (<include refid="Base_Column_List"></include>)
         VALUES(#{item.routeId}, #{item.routeName},#{item.routeType},#{item.isHaveSubRouteCombine}, #{item.routeNameExt},#{item.routeMemo}, #{item.isMainSub}, #{item.isBrt})
     </insert>
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO route_station_info
+        (<include refid="Base_Column_List"></include>)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.routeId}, #{item.routeName},#{item.routeType},#{item.isHaveSubRouteCombine}, #{item.routeNameExt},#{item.routeMemo}, #{item.isMainSub}, #{item.isBrt}
+            )
+        </foreach>
+    </insert>
 </mapper>

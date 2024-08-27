@@ -24,7 +24,7 @@
         station_sort
     </sql>
     <insert id="insertRecord" parameterType="com.iwhalecloud.data.collect.domain.SegStationInfo">
-        INSERT INTO route_station_info
+        INSERT INTO seg_station_info
         (<include refid="Base_Column_List"></include>)
         VALUES( #{item.stationId},
         #{item.stationName},
@@ -37,5 +37,24 @@
         #{item.dualSerial},
         #{item.stationSort}
         )
+    </insert>
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO seg_station_info
+        (<include refid="Base_Column_List"></include>)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.stationId},
+            #{item.stationName},
+            #{item.segmentId},
+            #{item.stationNo},
+            #{item.longitude},
+            #{item.latitude},
+            #{item.stationMemo},
+            #{item.speed},
+            #{item.dualSerial},
+            #{item.stationSort}
+            )
+        </foreach>
     </insert>
 </mapper>

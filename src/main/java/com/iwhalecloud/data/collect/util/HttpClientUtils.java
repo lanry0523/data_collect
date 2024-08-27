@@ -1,11 +1,19 @@
 package com.iwhalecloud.data.collect.util;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
+
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iwhalecloud.data.collect.domain.RouteStationInfo;
 import com.iwhalecloud.data.collect.domain.SegMentInfo;
 import com.iwhalecloud.data.collect.domain.SegStationInfo;
+import com.iwhalecloud.data.collect.domain.response.RouteStationInfoRep;
+import com.iwhalecloud.data.collect.domain.response.SegMentInfoRep;
+import com.iwhalecloud.data.collect.domain.response.SegStationInfoRep;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
@@ -33,6 +41,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -348,7 +357,7 @@ public class HttpClientUtils {
         return resultJson;
     }
 
-    public static Map<String, Object> getParams(){
+    public static Map<String, Object> getParams(String RouteID){
         Map<String, Object> params = new HashMap<>();
         DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss", Locale.CHINA);
         String timeStamp = df.format(new Date());
@@ -358,6 +367,7 @@ public class HttpClientUtils {
         params.put("Random", randomValue);
         params.put("SignKey", signKe);
         params.put("PackageName","com.hengqin");
+        params.put("RouteID",RouteID);
         return params;
     }
     /**
@@ -368,17 +378,32 @@ public class HttpClientUtils {
     public static Map<String, Object> getCustomer(String jsonBody){
         Map<String, Object>  custom = null;
         try {
-            custom = JsonUtils.json2map(jsonBody);
+            custom = JSON.parseObject(jsonBody);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("解析数据失败",e);
         }
         return custom;
     }
+    /**
+     * 解析数据
+     * @param jsonBody
+     * @return
+     */
+    public static List<RouteStationInfoRep> getCustomerArray(String jsonBody) throws Exception{
+        List<RouteStationInfoRep> listData = new ArrayList<>();
+        try {
+            listData = JSON.parseArray(jsonBody, RouteStationInfoRep.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("解析数据失败",e);
+        }
+        return listData;
+    }
     public static void test() throws Exception {
         String allUrl = "http://120.238.166.245:62100/BusService/Query_AllSubRouteData/";
         String routUrl = "http://120.238.166.245:62100/BusService/Query_RouteStatData/";
-        Map<String, Object> params = HttpClientUtils.getParams();
+        Map<String, Object> params = HttpClientUtils.getParams(null);
         String result = HttpClientUtils.sendPost(allUrl, params, 0, 0, 0);
         Map<String, Object> buMap = getCustomer(result);//查询返回所有线路信息
         log.info("buMap：{}",buMap);
@@ -391,66 +416,76 @@ public class HttpClientUtils {
             log.info("itemMapList：{}",itemMapList);
             for(Map<String, Object> itemMap : itemMapList){
                 if(MapUtil.isNotEmpty(itemMap)){
-                    //根据线路ID查询所有线路下站点信息
-                    Map<String, Object> paramsRout = HttpClientUtils.getParams();
-                    paramsRout.put("RouteID", EncryptHelper.EncryptCodeString(itemMap.get("RouteID").toString()));
-                    String resultRout = HttpClientUtils.sendPost(routUrl, paramsRout, 0, 0, 0);
-                    Map<String, Object> routMap = getCustomer(resultRout);
-                    //线路信息
-                    RouteStationInfo stationInfo = new RouteStationInfo();
-                    stationInfo.setRouteId(Integer.valueOf(routMap.get("RouteID").toString()));
-                    stationInfo.setRouteName(routMap.get("RouteName").toString());
-                    stationInfo.setRouteType(routMap.get("RouteType").toString());
-                    stationInfo.setRouteMemo(routMap.get("RouteMemo").toString());
-                    stationInfo.setRouteNameExt(routMap.get("RouteNameExt").toString());
-                    stationInfo.setIsMainSub(routMap.get("IsMainSub").toString());
-                    stationInfo.setIsHaveSubRouteCombine(routMap.get("IsHaveSubRouteCombine").toString());
-                    stationInfo.setIsBrt(routMap.get("IsBrt").toString());
-                    rst.add(stationInfo);
 
-                    List<Map<String, Object>> smfList = (List<Map<String, Object>>) MapUtils.getObject(itemMap, "SegmentList", new ArrayList<>(16));
-                    log.info("smfList：{}",smfList);
-                    for(Map<String, Object> smfMap : smfList){
-                        if(MapUtil.isNotEmpty(smfMap)){
-                            //单程信息
-                            SegMentInfo smfInfo = new SegMentInfo();
-                            smfInfo.setSegmentId(Integer.valueOf(smfMap.get("SegmentID").toString()));
-                            smfInfo.setSegmentName(smfMap.get("SegmentName").toString());
-                            smfInfo.setAmapId(smfMap.get("AmapID").toString());
-                            smfInfo.setRouteId(Integer.valueOf(smfMap.get("RouteID").toString()));
-                            smfInfo.setFirtLastShiftInfo(smfMap.get("FirtLastShiftInfo").toString());
-                            smfInfo.setMemos(smfMap.get("Memos").toString());
-                            smfInfo.setDrawType(smfMap.get("DrawType").toString());
-                            smfInfo.setFirstTime((Date) smfMap.get("firstTime"));
-                            smfInfo.setFirtLastShiftInfo2(smfMap.get("FirtLastShiftInfo2").toString());
-                            smfInfo.setBaiduMapId(smfMap.get("BaiduMapID").toString());
-                            smfInfo.setNormalTimeSpan(Integer.valueOf(smfMap.get("normalTimeSpan").toString()));
-                            smfInfo.setRunDirection(smfMap.get("RunDirection").toString());
-                            smfInfo.setRoutePrice(Integer.valueOf(smfMap.get("routePrice").toString()));
-                            smfInfo.setPeakTimeSpan(Integer.valueOf(smfMap.get("peakTimeSpan").toString()));
-                            smfInfo.setLastTime((Date) smfMap.get("lastTime"));
-                            smf.add(smfInfo);
+                    //根据线路ID查询所有线路下站点信息
+                    Integer RouteID = (Integer) itemMap.get("RouteID");
+                    if(RouteID == 357){
+                        continue;
+                    }
+                    Map<String, Object> paramsRout = HttpClientUtils.getParams(EncryptHelper.EncryptCodeString(RouteID.toString()));
+
+                    String resultRout = HttpClientUtils.sendGet(routUrl, paramsRout, 0, 0, 0);
+                    log.info(resultRout);
+                    List<RouteStationInfoRep> customerArray = getCustomerArray(resultRout);
+
+                    for(RouteStationInfoRep rs : customerArray){
+                        //线路信息
+                        RouteStationInfo stationInfo = new RouteStationInfo();
+                        stationInfo.setIsBrt(rs.getIsBRT());
+                        stationInfo.setIsMainSub(rs.getIsmainsub());
+                        stationInfo.setIsHaveSubRouteCombine(rs.getRsHaveSubRouteCombine());
+                        stationInfo.setRouteMemo(rs.getRouteMemo());
+                        stationInfo.setRouteName(rs.getRouteName());
+                        stationInfo.setRouteNameExt(rs.getRouteNameExt());
+                        stationInfo.setRouteId(rs.getRouteID());
+                        stationInfo.setRouteType(rs.getRouteType());
+                        rst.add(stationInfo);
+
+                        for (SegMentInfoRep sf :rs.getSegmentList()) {
+                            if(rs.getSegmentList().size() > 0){
+                                //单程信息
+                                Integer segmentID = sf.getSegmentID();
+                                SegMentInfo smfInfo = new SegMentInfo();
+                                smfInfo.setSegmentId(segmentID);
+                                smfInfo.setSegmentName(sf.getSegmentName());
+                                smfInfo.setAmapId(sf.getSegmentName());
+                                smfInfo.setRouteId(RouteID);
+                                smfInfo.setFirtLastShiftInfo(sf.getFirtLastShiftInfo());
+                                smfInfo.setMemos(sf.getMemos());
+                                smfInfo.setDrawType(sf.getDrawType());
+                                smfInfo.setFirstTime(sf.getFirstTime());
+                                smfInfo.setFirtLastShiftInfo2(sf.getFirtLastShiftInfo2());
+                                smfInfo.setBaiduMapId(sf.getBaidumapid());
+                                smfInfo.setNormalTimeSpan(Integer.valueOf(sf.getNormalTimeSpan()));
+                                smfInfo.setRunDirection(sf.getRunDirection());
+                                smfInfo.setRoutePrice(Integer.valueOf(sf.getRoutePrice() != null ? sf.getRoutePrice() : 0 ));
+                                smfInfo.setPeakTimeSpan(Integer.valueOf(sf.getPeakTimeSpan()));
+                                smfInfo.setLastTime(sf.getLastTime());
+                                smf.add(smfInfo);
+
+                                for (SegStationInfoRep ss : sf.getStationList()) {
+                                    if(sf.getStationList().size() > 0){
+                                        //站点信息
+                                        SegStationInfo ssfInfo = new SegStationInfo();
+                                        ssfInfo.setSegmentId(segmentID);
+                                        ssfInfo.setStationId(ss.getStationID());
+                                        ssfInfo.setStationName(ss.getStationName());
+                                        ssfInfo.setLatitude(ss.getStationPostion().getLatitude());
+                                        ssfInfo.setLongitude(ss.getStationPostion().getLongitude());
+                                        ssfInfo.setSpeed(ss.getSpeed());
+                                        ssfInfo.setDualSerial(ss.getDualSerial());
+                                        ssfInfo.setStationMemo(ss.getStationName());
+                                        ssfInfo.setStationNo(ss.getStationNO());
+                                        ssfInfo.setStationSort(ss.getStationSort());
+                                        ssf.add(ssfInfo);
+                                    }
+                                }
+                            }
                         }
                     }
-                    //站点信息
-                    List<Map<String, Object>> ssfList = (List<Map<String, Object>>) MapUtils.getObject(itemMap, "StationList", new ArrayList<>(16));
-                    log.info("ssfList：{}",ssfList);
-                    for(Map<String, Object> ssfMap : ssfList){
-                        if(MapUtil.isNotEmpty(ssfMap)){
-                            SegStationInfo ssfInfo = new SegStationInfo();
-                            ssfInfo.setSegmentId(Integer.valueOf(ssfMap.get("SegmentID").toString()));
-                            ssfInfo.setStationId(ssfMap.get("StationID").toString());
-                            ssfInfo.setStationName(ssfMap.get("StationName").toString());
-                            ssfInfo.setLatitude(BigDecimal.valueOf(Long.valueOf(ssfMap.get("latitude").toString())));
-                            ssfInfo.setLongitude(BigDecimal.valueOf(Long.valueOf(ssfMap.get("longitude").toString())));
-                            ssfInfo.setSpeed(ssfMap.get("Speed").toString());
-                            ssfInfo.setDualSerial(Integer.valueOf(ssfMap.get("DualSerial").toString()));
-                            ssfInfo.setStationMemo(ssfMap.get("StationMemo").toString());
-                            ssfInfo.setStationNo(Integer.valueOf(ssfMap.get("StationNo").toString()));
-                            ssfInfo.setStationSort(Integer.valueOf(ssfMap.get("StationSort").toString()));
-                            ssf.add(ssfInfo);
-                        }
-                    }
+                    log.info("rs:{}", rst.size());
+                    log.info("smf:{}", smf.size());
+                    log.info("ssf:{}", ssf.size());
                 }
             }
         }
@@ -480,5 +515,7 @@ public class HttpClientUtils {
          **/
 
         test();
+
+
     }
 }
