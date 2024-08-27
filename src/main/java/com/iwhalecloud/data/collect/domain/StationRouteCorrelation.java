@@ -21,4 +21,8 @@ public class StationRouteCorrelation {
      * 站点排序
      */
     private Integer stationSort;
+    /**
+     * 站点序号
+     */
+    private Integer stationNo;
 }

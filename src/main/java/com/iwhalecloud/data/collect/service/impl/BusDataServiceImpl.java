@@ -2,14 +2,13 @@ package com.iwhalecloud.data.collect.service.impl;
 
 import cn.hutool.core.map.MapUtil;
 import com.alibaba.fastjson2.JSON;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.iwhalecloud.data.collect.dao.BusDataDao;
 import com.iwhalecloud.data.collect.dao.RouteStationInfoDao;
 import com.iwhalecloud.data.collect.dao.SegMentInfoDao;
 import com.iwhalecloud.data.collect.dao.SegStationInfoDao;
 import com.iwhalecloud.data.collect.domain.RouteStationInfo;
 import com.iwhalecloud.data.collect.domain.SegMentInfo;
 import com.iwhalecloud.data.collect.domain.SegStationInfo;
+import com.iwhalecloud.data.collect.domain.StationRouteCorrelation;
 import com.iwhalecloud.data.collect.domain.response.RouteStationInfoRep;
 import com.iwhalecloud.data.collect.domain.response.SegMentInfoRep;
 import com.iwhalecloud.data.collect.domain.response.SegStationInfoRep;
@@ -17,18 +16,14 @@ import com.iwhalecloud.data.collect.service.BusDataService;
 import com.iwhalecloud.data.collect.util.EncryptHelper;
 import com.iwhalecloud.data.collect.util.HttpClientUtils;
 import com.iwhalecloud.data.collect.util.JsonUtils;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -42,9 +37,10 @@ public class BusDataServiceImpl implements BusDataService {
     @Autowired
     private RouteStationInfoDao routeStationInfoDao;
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void syncBusDataInfo() throws Exception{
+        segStationInfoDao.batchDeleteCt();
         String allUrl = "http://120.238.166.245:62100/BusService/Query_AllSubRouteData/";
         String routUrl = "http://120.238.166.245:62100/BusService/Query_RouteStatData/";
         Map<String, Object> params = HttpClientUtils.getParams(null);
@@ -55,7 +51,8 @@ public class BusDataServiceImpl implements BusDataService {
             List<RouteStationInfo> rst = new ArrayList<>(16);
             List<SegMentInfo> smf = new ArrayList<>(16);
             List<SegStationInfo> ssf = new ArrayList<>(16);
-
+            List<StationRouteCorrelation> srcData = new ArrayList<>(16);
+            Set<StationRouteCorrelation> srcList = new HashSet<StationRouteCorrelation>();
             List<Map<String, Object>> itemMapList = (List<Map<String, Object>>) MapUtils.getObject(buMap, "RouteList", new ArrayList<>(16));
             log.info("itemMapList：{}",itemMapList);
             for(Map<String, Object> itemMap : itemMapList){
@@ -63,9 +60,7 @@ public class BusDataServiceImpl implements BusDataService {
 
                     //根据线路ID查询所有线路下站点信息
                     Integer RouteID = (Integer) itemMap.get("RouteID");
-                    if(RouteID == 357){
-                        continue;
-                    }
+
                     Map<String, Object> paramsRout = HttpClientUtils.getParams(EncryptHelper.EncryptCodeString(RouteID.toString()));
 
                     String resultRout = HttpClientUtils.sendGet(routUrl, paramsRout, 0, 0, 0);
@@ -122,19 +117,38 @@ public class BusDataServiceImpl implements BusDataService {
                                         ssfInfo.setStationNo(ss.getStationNO());
                                         ssfInfo.setStationSort(ss.getStationSort());
                                         ssf.add(ssfInfo);
+
+                                        //站点，线路，单程关系
+                                        StationRouteCorrelation src = new StationRouteCorrelation();
+                                        src.setStationId(ss.getStationID());
+                                        src.setRouteId(RouteID);
+                                        src.setSegmentId(segmentID);
+                                        int i = segStationInfoDao.selectCheckStation(src);
+                                        if(i < 1){
+                                            StationRouteCorrelation sr = new StationRouteCorrelation();
+                                            sr.setStationId(ss.getStationID());
+                                            sr.setRouteId(RouteID);
+                                            sr.setSegmentId(segmentID);
+                                            sr.setStationSort(ss.getStationSort());
+                                            sr.setStationNo(ss.getStationNO());
+                                            srcList.add(sr);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    log.info("rs:{}", rst.size());
-                    log.info("smf:{}", smf.size());
-                    log.info("ssf:{}", ssf.size());
-                    routeStationInfoDao.batchInsert(rst);
-                    segMentInfoDao.batchInsert(smf);
-                    segStationInfoDao.batchInsert(ssf);
                 }
             }
+            routeStationInfoDao.batchDelete();
+            segMentInfoDao.batchDelete();
+            segStationInfoDao.batchDelete();
+
+            routeStationInfoDao.batchInsert(rst);
+            segMentInfoDao.batchInsert(smf);
+            segStationInfoDao.batchInsert(ssf);
+
+            segStationInfoDao.batchInsertStation(new ArrayList<>(srcList));
         }
     }
 

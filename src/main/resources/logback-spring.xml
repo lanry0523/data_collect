@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
-    <property name="APP_NAME" value="meituan-data-collect"/>
+    <property name="APP_NAME" value="bus-data-collect"/>
     <property name="LOG_PATH" value="${LOG_ROOT:-./logs}/${APP_NAME}"/>
     <property name="ENCODING" value="UTF-8"/>
     <property name="MAX_HISTORY" value="15"/>

@@ -1,12 +1,13 @@
 package com.iwhalecloud.data.collect.domain.response;
 
 
-import com.iwhalecloud.data.collect.domain.SegMentInfo;
+
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-
+@Component
 @Data
 public class RouteStationInfoRep {
     /**

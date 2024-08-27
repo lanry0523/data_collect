@@ -18,4 +18,5 @@ public interface SegMentInfoDao {
      * @return
      */
     int batchInsert(List<SegMentInfo> list);
+    int batchDelete();
 }

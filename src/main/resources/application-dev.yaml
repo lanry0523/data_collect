@@ -6,7 +6,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://127.0.0.1:3306/dhq_bike_data?userSSL=false&serverTimezone=GMT%2B8
+      url: jdbc:mysql://localhost:3306/dhq_bike_data?userSSL=false&serverTimezone=GMT%2B8
       username: root
       password: 1234qwer
       initial-size: 1

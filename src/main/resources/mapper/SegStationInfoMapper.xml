@@ -57,4 +57,31 @@
             )
         </foreach>
     </insert>
+    <insert id="batchInsertStation" parameterType="java.util.List">
+        INSERT INTO station_route_correlation
+        (route_id,segment_id,station_id,station_sort,station_no)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.routeId},
+            #{item.segmentId},
+            #{item.stationId},
+            #{item.stationSort},
+            #{item.stationNo}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectCheckStation" parameterType="com.iwhalecloud.data.collect.domain.StationRouteCorrelation" resultType="int">
+        select count(*) from station_route_correlation
+        where route_id = #{item.routeId} and
+        segment_id = #{item.segmentId} and
+        station_id = #{item.stationId}
+    </select>
+    <update id="batchDelete">
+        TRUNCATE TABLE seg_station_info;
+    </update>
+    <update id="batchDeleteCt">
+        TRUNCATE TABLE station_route_correlation;
+    </update>
 </mapper>

@@ -1,6 +1,5 @@
 package com.iwhalecloud.data.collect.domain.response;
 
-import com.iwhalecloud.data.collect.domain.SegStationInfo;
 import lombok.Data;
 
 import java.util.Date;

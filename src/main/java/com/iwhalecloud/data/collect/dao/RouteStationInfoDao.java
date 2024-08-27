@@ -18,4 +18,5 @@ public interface RouteStationInfoDao {
      * @return
      */
     int batchInsert(List<RouteStationInfo> list);
+    int batchDelete();
 }
