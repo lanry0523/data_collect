@@ -6,7 +6,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://rm-6cz6011l17f1k99k4.mysql.rds.inner.yun.hengqin.gov.cn:3306/zhgj_db?userSSL=fasle&serverTimezone=GMT%2B8
+      url: jdbc:mysql://rm-6cz6011l17f1k99k4.mysql.rds.inner.yun.hengqin.gov.cn:3306/mtzxc_db?userSSL=fasle&serverTimezone=GMT%2B8
       username: wcc123
       password: Wcc312487@
       initial-size: 3
