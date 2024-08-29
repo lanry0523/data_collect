@@ -336,19 +336,23 @@ public class HttpClientUtils {
             //.setConnectionRequestTimeout(HTTP_CONNECTION_REQUEST_TIMEOUT).build();
             httpPost.setConfig(config);
             // 发送请求,返回响应对象
+            log.info("发送请求:{}",httpPost);
             CloseableHttpResponse response = client.execute(httpPost);
             // 获取响应状态
             int status = response.getStatusLine().getStatusCode();
+            log.error("响应状态，状态码：" + status);
+            log.info("响应集：" + response.getEntity());
             if (status == org.apache.http.HttpStatus.SC_OK) {
                 // 获取响应结果
                 resultJson = EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET);
+                log.error("响应结果：resultJson " + resultJson);
             } else {
                 log.error("响应失败，状态码：" + status);
                 log.error("响应失败：" + EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET));
             }
 
         } catch (Exception e) {
-            //log.error("发送post请求失败", e);
+            log.error("发送post请求失败", e);
             e.printStackTrace();
 
         } finally {

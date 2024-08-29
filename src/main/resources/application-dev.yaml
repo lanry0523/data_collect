@@ -45,3 +45,6 @@ pagehelper:
 logging:
   level:
     com.iwhalecloud.data.collect.dao: info
+
+schedule:
+  cron: 0 */5 * * * ?

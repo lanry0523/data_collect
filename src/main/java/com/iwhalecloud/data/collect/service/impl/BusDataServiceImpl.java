@@ -39,7 +39,7 @@ public class BusDataServiceImpl implements BusDataService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void syncBusDataInfo(){
-        log.info("定时调用--------------->");
+        log.info("<-------------------获取公交定时任务启动----------------->");
          try{
             segStationInfoDao.batchDeleteCt();
             String allUrl = "http://120.238.166.245:62100/BusService/Query_AllSubRouteData/";
@@ -47,7 +47,7 @@ public class BusDataServiceImpl implements BusDataService {
             Map<String, Object> params = HttpClientUtils.getParams(null);
             String result = HttpClientUtils.sendPost(allUrl, params, 0, 0, 0);
             Map<String, Object> buMap = getCustomer(result);//查询返回所有线路信息
-            log.info("buMap：{}",buMap);
+            log.info("result：{}",result);
             if(MapUtil.isNotEmpty(buMap)){
                 List<RouteStationInfo> rst = new ArrayList<>(16);
                 List<SegMentInfo> smf = new ArrayList<>(16);
@@ -149,6 +149,7 @@ public class BusDataServiceImpl implements BusDataService {
                 segMentInfoDao.batchInsert(smf);
                 segStationInfoDao.batchInsert(ssf);
                 segStationInfoDao.batchInsertStation(new ArrayList<>(srcList));
+                log.info("get bus data The time is now : " + new java.util.Date());
             }
         }catch (Exception e){
             e.printStackTrace();
