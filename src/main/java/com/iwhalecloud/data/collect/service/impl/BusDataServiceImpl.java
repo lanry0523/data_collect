@@ -23,7 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
@@ -33,41 +36,35 @@ public class BusDataServiceImpl implements BusDataService {
     private SegMentInfoDao segMentInfoDao;
     @Resource
     private SegStationInfoDao segStationInfoDao;
-    @Autowired
+    @Resource
     private RouteStationInfoDao routeStationInfoDao;
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void syncBusDataInfo(){
         log.info("<-------------------获取公交定时任务启动----------------->");
          try{
-            segStationInfoDao.batchDeleteCt();
+            //segStationInfoDao.batchDeleteCt();
             String allUrl = "http://120.238.166.245:62100/BusService/Query_AllSubRouteData/";
             String routUrl = "http://120.238.166.245:62100/BusService/Query_RouteStatData/";
             Map<String, Object> params = HttpClientUtils.getParams(null);
             String result = HttpClientUtils.sendPost(allUrl, params, 0, 0, 0);
             Map<String, Object> buMap = getCustomer(result);//查询返回所有线路信息
-            log.info("result：{}",result);
+            //log.info("result：{}",result);
             if(MapUtil.isNotEmpty(buMap)){
                 List<RouteStationInfo> rst = new ArrayList<>(16);
                 List<SegMentInfo> smf = new ArrayList<>(16);
-                List<SegStationInfo> ssf = new ArrayList<>(16);
-                List<StationRouteCorrelation> srcData = new ArrayList<>(16);
-                Set<StationRouteCorrelation> srcList = new HashSet<StationRouteCorrelation>();
+                List<SegStationInfo> ssf = new ArrayList<>();
+
                 List<Map<String, Object>> itemMapList = (List<Map<String, Object>>) MapUtils.getObject(buMap, "RouteList", new ArrayList<>(16));
-                log.info("itemMapList：{}",itemMapList);
+                //log.info("itemMapList：{}",itemMapList);
+                int count = 0;
                 for(Map<String, Object> itemMap : itemMapList){
                     if(MapUtil.isNotEmpty(itemMap)){
-
                         //根据线路ID查询所有线路下站点信息
                         Integer RouteID = (Integer) itemMap.get("RouteID");
-
                         Map<String, Object> paramsRout = HttpClientUtils.getParams(EncryptHelper.EncryptCodeString(RouteID.toString()));
-
                         String resultRout = HttpClientUtils.sendGet(routUrl, paramsRout, 0, 0, 0);
-                        log.info(resultRout);
                         List<RouteStationInfoRep> customerArray = getCustomerArray(resultRout);
-
                         for(RouteStationInfoRep rs : customerArray){
                             //线路信息
                             RouteStationInfo stationInfo = new RouteStationInfo();
@@ -115,25 +112,9 @@ public class BusDataServiceImpl implements BusDataService {
                                             ssfInfo.setSpeed(ss.getSpeed());
                                             ssfInfo.setDualSerial(ss.getDualSerial());
                                             ssfInfo.setStationMemo(ss.getStationName());
-                                            ssfInfo.setStationNo(ss.getStationNO());
-                                            ssfInfo.setStationSort(ss.getStationSort());
+                                            ssfInfo.setSngserialId(ss.getSngserialId());
                                             ssf.add(ssfInfo);
 
-                                            //站点，线路，单程关系
-                                            StationRouteCorrelation src = new StationRouteCorrelation();
-                                            src.setStationId(ss.getStationID());
-                                            src.setRouteId(RouteID);
-                                            src.setSegmentId(segmentID);
-                                            int i = segStationInfoDao.selectCheckStation(src);
-                                            if(i < 1){
-                                                StationRouteCorrelation sr = new StationRouteCorrelation();
-                                                sr.setStationId(ss.getStationID());
-                                                sr.setRouteId(RouteID);
-                                                sr.setSegmentId(segmentID);
-                                                sr.setStationSort(ss.getStationSort());
-                                                sr.setStationNo(ss.getStationNO());
-                                                srcList.add(sr);
-                                            }
                                         }
                                     }
                                 }
@@ -141,14 +122,41 @@ public class BusDataServiceImpl implements BusDataService {
                         }
                     }
                 }
-                routeStationInfoDao.batchDelete();
-                segMentInfoDao.batchDelete();
-                segStationInfoDao.batchDelete();
+                log.info("站点集合,{},{},{}",ssf.size(),smf.size(),rst.size());
+                log.info("组装数据结束-开始入库-------");
+//                segStationInfoDao.batchDelete();
+//                routeStationInfoDao.batchDelete();
+//                segMentInfoDao.batchDelete();
 
-                routeStationInfoDao.batchInsert(rst);
-                segMentInfoDao.batchInsert(smf);
-                segStationInfoDao.batchInsert(ssf);
-                segStationInfoDao.batchInsertStation(new ArrayList<>(srcList));
+
+                int i3 = routeStationInfoDao.batchInsert(rst);
+                log.info("线路入库,{}",i3);
+                int i2 = segMentInfoDao.batchInsert(smf);
+                log.info("单程入库,{}",i2);
+                //int i = segStationInfoDao.batchInsert(ssf);
+                instBus();
+                log.info("站点入库,{}");
+                //segStationInfoDao.batchInsert(ssf);
+                if(ssf.isEmpty() || ssf == null){
+                    log.info("站点未获取到何任数据");
+                    return;
+                }
+
+//                int nThreads = 50;
+//                int size = ssf.size();
+//                //ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+//                for(int i = 0; i < nThreads; i++){
+//                    final List<SegStationInfo> rstList = ssf.subList(size / nThreads * i,size / nThreads * (i+1));
+//                    log.info("批量入库开始,{} 当前入库数量,{}",i,rstList.size());
+//                    log.info("开始入库");
+//                    for (SegStationInfo rs : rstList) {
+//                        segStationInfoDao.insertRecord(rs);
+//                    }
+//                   // int i1 = segStationInfoDao.batchInsert(rstList);
+//                   // System.out.println("成功入库数量："+i1);
+//
+//                }
+                //executorService.shutdown();
                 log.info("get bus data The time is now : " + new java.util.Date());
             }
         }catch (Exception e){
@@ -156,6 +164,34 @@ public class BusDataServiceImpl implements BusDataService {
         }
     }
 
+    @Override
+    public int instBus() {
+        List<SegStationInfo> rstList = new ArrayList<>();
+        SegStationInfo ssfInfo = new SegStationInfo();
+        ssfInfo.setSegmentId(11);
+        ssfInfo.setStationId("222");
+        ssfInfo.setStationName("测试");
+        ssfInfo.setLatitude(new BigDecimal(2.345));
+        ssfInfo.setLongitude(new BigDecimal(2.345));
+        ssfInfo.setSpeed("33");
+        ssfInfo.setDualSerial(32);
+        ssfInfo.setStationMemo("333");
+        ssfInfo.setSngserialId(112);
+        SegStationInfo ssfInfo1 = new SegStationInfo();
+        ssfInfo.setSegmentId(11);
+        ssfInfo.setStationId("23322");
+        ssfInfo.setStationName("测试33");
+        ssfInfo.setLatitude(new BigDecimal(2.345));
+        ssfInfo.setLongitude(new BigDecimal(2.345));
+        ssfInfo.setSpeed("33");
+        ssfInfo.setDualSerial(32);
+        ssfInfo.setStationMemo("333");
+        ssfInfo.setSngserialId(112);
+        rstList.add(ssfInfo);
+        rstList.add(ssfInfo1);
+        int i = segStationInfoDao.batchInsert(rstList);
+        return i;
+    }
 
 
     /**

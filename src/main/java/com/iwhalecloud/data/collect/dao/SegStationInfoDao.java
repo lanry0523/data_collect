@@ -18,14 +18,14 @@ public interface SegStationInfoDao {
      * @param list
      * @return
      */
-    int batchInsert(List<SegStationInfo> list);
+    int batchInsert(@Param("list") List<SegStationInfo> list);
     /**
      * 批量新增
      *
-     * @param list
+     * @param listItm
      * @return
      */
-    int batchInsertStation(List<StationRouteCorrelation> list);
+    int batchInsertStation(List<StationRouteCorrelation> listItm);
 
     int selectCheckStation(@Param("item") StationRouteCorrelation stationRouteCorrelation);
     int batchDelete();

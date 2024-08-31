@@ -49,6 +49,8 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HttpClientUtils {
 
@@ -336,19 +338,14 @@ public class HttpClientUtils {
             //.setConnectionRequestTimeout(HTTP_CONNECTION_REQUEST_TIMEOUT).build();
             httpPost.setConfig(config);
             // 发送请求,返回响应对象
-            log.info("发送请求:{}",httpPost);
             CloseableHttpResponse response = client.execute(httpPost);
             // 获取响应状态
             int status = response.getStatusLine().getStatusCode();
-            log.error("响应状态，状态码：" + status);
-            log.info("响应集：" + response.getEntity());
+
             if (status == org.apache.http.HttpStatus.SC_OK) {
                 // 获取响应结果
                 resultJson = EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET);
-                log.error("响应结果：resultJson " + resultJson);
             } else {
-                log.error("响应失败，状态码：" + status);
-                log.error("响应失败：" + EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET));
             }
 
         } catch (Exception e) {
@@ -479,8 +476,7 @@ public class HttpClientUtils {
                                         ssfInfo.setSpeed(ss.getSpeed());
                                         ssfInfo.setDualSerial(ss.getDualSerial());
                                         ssfInfo.setStationMemo(ss.getStationName());
-                                        ssfInfo.setStationNo(ss.getStationNO());
-                                        ssfInfo.setStationSort(ss.getStationSort());
+
                                         ssf.add(ssfInfo);
 
                                         //站点id,线路id,单程Id,关联关系表
@@ -521,7 +517,18 @@ public class HttpClientUtils {
 
          **/
 
-        test();
+        int nThreads = 10;
+        int size = 20000;
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for(int i = 0; i < nThreads; i++){
+            //final List<SegStationInfo> rstList = ssf.subList(size / nThreads * i,size / nThreads * (i+1));
+            log.info("批量入库开始,{} 当前入库数量,{}",i,0);
+            executorService.execute(()->{
+
+                System.out.println("成功入库数量：");
+            });
+        }
+        executorService.shutdown();
 
 
     }

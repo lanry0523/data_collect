@@ -26,10 +26,6 @@ public class SegStationInfoRep {
      */
     private Integer SegmentId;
 
-    /**
-     * 站点序号
-     */
-    private Integer StationNO;
 
     private StationPostion StationPostion;
 
@@ -49,9 +45,9 @@ public class SegStationInfoRep {
     private Integer DualSerial;
 
     /**
-     * 站点排序
+     * 单程站点序号排序
      */
-    private Integer StationSort;
+    private Integer sngserialId;
 
 
 }

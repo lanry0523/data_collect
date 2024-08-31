@@ -8,20 +8,19 @@
             <result property="stationId" column="station_id" jdbcType="VARCHAR"/>
             <result property="stationName" column="station_name" jdbcType="VARCHAR"/>
             <result property="segmentId" column="segment_id" jdbcType="INTEGER"/>
-            <result property="stationNo" column="station_no" jdbcType="INTEGER"/>
             <result property="longitude" column="longitude" jdbcType="DECIMAL"/>
             <result property="latitude" column="latitude" jdbcType="DECIMAL"/>
             <result property="stationMemo" column="station_memo" jdbcType="VARCHAR"/>
             <result property="speed" column="speed" jdbcType="VARCHAR"/>
             <result property="dualSerial" column="dual_serial" jdbcType="INTEGER"/>
-            <result property="stationSort" column="station_sort" jdbcType="INTEGER"/>
+            <result property="sngserialId" column="sngserial_id" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         station_id,station_name,segment_id,
-        station_no,longitude,latitude,
+        longitude,latitude,
         station_memo,speed,dual_serial,
-        station_sort
+        sngserial_id
     </sql>
     <insert id="insertRecord" parameterType="com.iwhalecloud.data.collect.domain.SegStationInfo">
         INSERT INTO seg_station_info
@@ -29,13 +28,12 @@
         VALUES( #{item.stationId},
         #{item.stationName},
         #{item.segmentId},
-        #{item.stationNo},
         #{item.longitude},
         #{item.latitude},
         #{item.stationMemo},
         #{item.speed},
         #{item.dualSerial},
-        #{item.stationSort}
+        #{item.sngserialId}
         )
     </insert>
     <insert id="batchInsert" parameterType="java.util.List">
@@ -47,13 +45,12 @@
             #{item.stationId},
             #{item.stationName},
             #{item.segmentId},
-            #{item.stationNo},
             #{item.longitude},
             #{item.latitude},
             #{item.stationMemo},
             #{item.speed},
             #{item.dualSerial},
-            #{item.stationSort}
+            #{item.sngserialId}
             )
         </foreach>
     </insert>
@@ -61,7 +58,7 @@
         INSERT INTO station_route_correlation
         (route_id,segment_id,station_id,station_sort,station_no)
         VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
+        <foreach collection="listItm" item="item" index="index" separator=",">
             (
             #{item.routeId},
             #{item.segmentId},
@@ -78,9 +75,9 @@
         segment_id = #{item.segmentId} and
         station_id = #{item.stationId}
     </select>
-    <update id="batchDelete">
-        TRUNCATE TABLE seg_station_info;
-    </update>
+    <delete id="batchDelete">
+        delete TABLE seg_station_info;
+    </delete>
     <update id="batchDeleteCt">
         TRUNCATE TABLE station_route_correlation;
     </update>

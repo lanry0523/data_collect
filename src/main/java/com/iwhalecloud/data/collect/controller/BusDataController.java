@@ -19,8 +19,8 @@ public class BusDataController {
     public ResultResponse getDataList() {
         log.info("调用getDataList请求");
         try {
-            busDataService.syncBusDataInfo();
-            return ResultResponse.succResult(1);
+
+            return ResultResponse.succResult(busDataService.instBus());
         } catch (Exception e) {
             log.info("异常", e);
             return ResultResponse.systemErrorResult("系统异常");

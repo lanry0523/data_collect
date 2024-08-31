@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 线路表
+ *
  * @TableName seg_station_info
  */
 @Data
@@ -25,11 +25,6 @@ public class SegStationInfo {
      * 单程 ID
      */
     private Integer segmentId;
-
-    /**
-     * 站点序号
-     */
-    private Integer stationNo;
 
     /**
      * 经度
@@ -57,9 +52,9 @@ public class SegStationInfo {
     private Integer dualSerial;
 
     /**
-     * 站点排序
+     * 单程站点序号排序
      */
-    private Integer stationSort;
+    private Integer sngserialId;
 
 
 }
