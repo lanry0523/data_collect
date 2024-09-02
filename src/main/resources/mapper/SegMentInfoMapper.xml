@@ -75,6 +75,6 @@
         </foreach>
     </insert>
     <delete id="batchDelete">
-        delete TABLE seg_ment_info
+        delete from seg_ment_info
     </delete>
 </mapper>

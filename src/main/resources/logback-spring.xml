@@ -31,6 +31,22 @@
         </encoder>
     </appender>
 
+    <!--debug级别的日志打印配置-->
+    <appender name="DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <File>${LOG_PATH}/${APP_NAME}-debug.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-bebug-%d{yyyyMMdd}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%logger{36}.%M\(\):%L] - %m%n</pattern>
+            <charset>${ENCODING}</charset>
+        </encoder>
+    </appender>
+
     <!--error级别的日志打印配置-->
     <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -47,8 +63,9 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="INFO"/>
+        <appender-ref ref="DEBUG"/>
         <appender-ref ref="ERROR"/>
         <appender-ref ref="CONSOLE"/>
     </root>

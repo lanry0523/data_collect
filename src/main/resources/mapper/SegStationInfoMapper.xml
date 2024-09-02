@@ -69,16 +69,13 @@
         </foreach>
     </insert>
 
-    <select id="selectCheckStation" parameterType="com.iwhalecloud.data.collect.domain.StationRouteCorrelation" resultType="int">
-        select count(*) from station_route_correlation
-        where route_id = #{item.routeId} and
-        segment_id = #{item.segmentId} and
-        station_id = #{item.stationId}
+    <select id="selectCheckStation"  resultType="int">
+        select count(*) from seg_station_info
     </select>
     <delete id="batchDelete">
-        delete TABLE seg_station_info;
+        delete from seg_station_info
     </delete>
-    <update id="batchDeleteCt">
-        TRUNCATE TABLE station_route_correlation;
-    </update>
+    <delete id="batchDeleteCt">
+        delete from station_route_correlation
+    </delete>
 </mapper>

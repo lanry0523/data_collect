@@ -18,6 +18,7 @@ import com.iwhalecloud.data.collect.util.HttpClientUtils;
 import com.iwhalecloud.data.collect.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
+import org.apache.ibatis.session.SqlSessionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,26 +39,21 @@ public class BusDataServiceImpl implements BusDataService {
     private SegStationInfoDao segStationInfoDao;
     @Resource
     private RouteStationInfoDao routeStationInfoDao;
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void syncBusDataInfo(){
         log.info("<-------------------获取公交定时任务启动----------------->");
          try{
-            //segStationInfoDao.batchDeleteCt();
             String allUrl = "http://120.238.166.245:62100/BusService/Query_AllSubRouteData/";
             String routUrl = "http://120.238.166.245:62100/BusService/Query_RouteStatData/";
             Map<String, Object> params = HttpClientUtils.getParams(null);
             String result = HttpClientUtils.sendPost(allUrl, params, 0, 0, 0);
             Map<String, Object> buMap = getCustomer(result);//查询返回所有线路信息
-            //log.info("result：{}",result);
             if(MapUtil.isNotEmpty(buMap)){
                 List<RouteStationInfo> rst = new ArrayList<>(16);
                 List<SegMentInfo> smf = new ArrayList<>(16);
                 List<SegStationInfo> ssf = new ArrayList<>();
-
                 List<Map<String, Object>> itemMapList = (List<Map<String, Object>>) MapUtils.getObject(buMap, "RouteList", new ArrayList<>(16));
-                //log.info("itemMapList：{}",itemMapList);
-                int count = 0;
                 for(Map<String, Object> itemMap : itemMapList){
                     if(MapUtil.isNotEmpty(itemMap)){
                         //根据线路ID查询所有线路下站点信息
@@ -122,44 +118,35 @@ public class BusDataServiceImpl implements BusDataService {
                         }
                     }
                 }
+                routeStationInfoDao.batchDelete();
+                segMentInfoDao.batchDelete();
+                segStationInfoDao.batchDelete();
                 log.info("站点集合,{},{},{}",ssf.size(),smf.size(),rst.size());
-                log.info("组装数据结束-开始入库-------");
-//                segStationInfoDao.batchDelete();
-//                routeStationInfoDao.batchDelete();
-//                segMentInfoDao.batchDelete();
-
-
                 int i3 = routeStationInfoDao.batchInsert(rst);
                 log.info("线路入库,{}",i3);
                 int i2 = segMentInfoDao.batchInsert(smf);
                 log.info("单程入库,{}",i2);
-                //int i = segStationInfoDao.batchInsert(ssf);
-                instBus();
-                log.info("站点入库,{}");
-                //segStationInfoDao.batchInsert(ssf);
                 if(ssf.isEmpty() || ssf == null){
                     log.info("站点未获取到何任数据");
                     return;
                 }
-
-//                int nThreads = 50;
-//                int size = ssf.size();
-//                //ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-//                for(int i = 0; i < nThreads; i++){
-//                    final List<SegStationInfo> rstList = ssf.subList(size / nThreads * i,size / nThreads * (i+1));
-//                    log.info("批量入库开始,{} 当前入库数量,{}",i,rstList.size());
-//                    log.info("开始入库");
-//                    for (SegStationInfo rs : rstList) {
-//                        segStationInfoDao.insertRecord(rs);
-//                    }
-//                   // int i1 = segStationInfoDao.batchInsert(rstList);
-//                   // System.out.println("成功入库数量："+i1);
-//
-//                }
-                //executorService.shutdown();
+                int nThreads = 10;
+                int size = ssf.size();
+                ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+                for(int i = 0; i < nThreads; i++){
+                    final List<SegStationInfo> rstList = ssf.subList(size / nThreads * i,size / nThreads * (i+1));
+                    log.info("批量入库开始,{} 当前入库数量,{}",i,rstList.size());
+                    int i1 = segStationInfoDao.batchInsert(rstList);
+                }
+                executorService.shutdown();
+                int sum = segStationInfoDao.selectCheckStation();
+                log.info("set StationInfo cont,{}",sum);
                 log.info("get bus data The time is now : " + new java.util.Date());
             }
-        }catch (Exception e){
+         }catch (SqlSessionException sql){
+             sql.printStackTrace();
+         }
+         catch (Exception e){
             e.printStackTrace();
         }
     }
@@ -167,28 +154,19 @@ public class BusDataServiceImpl implements BusDataService {
     @Override
     public int instBus() {
         List<SegStationInfo> rstList = new ArrayList<>();
-        SegStationInfo ssfInfo = new SegStationInfo();
-        ssfInfo.setSegmentId(11);
-        ssfInfo.setStationId("222");
-        ssfInfo.setStationName("测试");
-        ssfInfo.setLatitude(new BigDecimal(2.345));
-        ssfInfo.setLongitude(new BigDecimal(2.345));
-        ssfInfo.setSpeed("33");
-        ssfInfo.setDualSerial(32);
-        ssfInfo.setStationMemo("333");
-        ssfInfo.setSngserialId(112);
-        SegStationInfo ssfInfo1 = new SegStationInfo();
-        ssfInfo.setSegmentId(11);
-        ssfInfo.setStationId("23322");
-        ssfInfo.setStationName("测试33");
-        ssfInfo.setLatitude(new BigDecimal(2.345));
-        ssfInfo.setLongitude(new BigDecimal(2.345));
-        ssfInfo.setSpeed("33");
-        ssfInfo.setDualSerial(32);
-        ssfInfo.setStationMemo("333");
-        ssfInfo.setSngserialId(112);
-        rstList.add(ssfInfo);
-        rstList.add(ssfInfo1);
+        for(int i =0;i < 3000;i++){
+            SegStationInfo ssfInfo = new SegStationInfo();
+            ssfInfo.setSegmentId(i+1);
+            ssfInfo.setStationId("222");
+            ssfInfo.setStationName("测试");
+            ssfInfo.setLatitude(new BigDecimal(2.345));
+            ssfInfo.setLongitude(new BigDecimal(2.345));
+            ssfInfo.setSpeed("33");
+            ssfInfo.setDualSerial(32);
+            ssfInfo.setStationMemo("333");
+            ssfInfo.setSngserialId(112);
+            rstList.add(ssfInfo);
+        }
         int i = segStationInfoDao.batchInsert(rstList);
         return i;
     }

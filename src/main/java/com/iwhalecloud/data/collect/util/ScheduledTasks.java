@@ -12,7 +12,7 @@ public class ScheduledTasks {
 //    @Scheduled(cron = "0 0/5 * * * ?") // 每10分钟执行一次
 //    public void reportCurrentTime() {
 //        busDataService.syncBusDataInfo();
-//        System.out.println("get bus data The time is now " + new java.util.Date());
+//
 //    }
 }
 

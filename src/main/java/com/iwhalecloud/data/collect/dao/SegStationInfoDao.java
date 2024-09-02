@@ -27,7 +27,7 @@ public interface SegStationInfoDao {
      */
     int batchInsertStation(List<StationRouteCorrelation> listItm);
 
-    int selectCheckStation(@Param("item") StationRouteCorrelation stationRouteCorrelation);
+    int selectCheckStation();
     int batchDelete();
     int batchDeleteCt();
 }
