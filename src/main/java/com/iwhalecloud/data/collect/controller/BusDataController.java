@@ -19,8 +19,48 @@ public class BusDataController {
     public ResultResponse getDataList() {
         log.info("调用getDataList请求");
         try {
+            busDataService.syncBusDataInfo();
+            return ResultResponse.succResult(1);
+        } catch (Exception e) {
+            log.info("异常", e);
+            return ResultResponse.systemErrorResult("系统异常");
+        }
+    }
 
-            return ResultResponse.succResult(busDataService.instBus());
+    @ResponseBody
+    @PostMapping("bus/info")
+    public ResultResponse info() {
+        log.info("调用getDataList请求");
+        try {
+            busDataService.instBus();
+            return ResultResponse.succResult(1);
+        } catch (Exception e) {
+            log.info("异常", e);
+            return ResultResponse.systemErrorResult("系统异常");
+        }
+    }
+
+
+    @ResponseBody
+    @PostMapping("bus/deleteAmap")
+    public ResultResponse delete() {
+        log.info("调用getDataList请求");
+        try {
+            busDataService.batchDeleteAmapList();
+            return ResultResponse.succResult(1);
+        } catch (Exception e) {
+            log.info("异常", e);
+            return ResultResponse.systemErrorResult("系统异常");
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("bus/selectCount")
+    public ResultResponse selectCount() {
+        log.info("调用getDataList请求");
+        try {
+            //busDataService.selectCount();
+            return ResultResponse.succResult(busDataService.selectCount());
         } catch (Exception e) {
             log.info("异常", e);
             return ResultResponse.systemErrorResult("系统异常");

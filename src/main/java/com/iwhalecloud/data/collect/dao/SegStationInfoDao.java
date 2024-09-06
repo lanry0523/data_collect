@@ -1,5 +1,6 @@
 package com.iwhalecloud.data.collect.dao;
 
+import com.iwhalecloud.data.collect.domain.ConvertAmapCoordinate;
 import com.iwhalecloud.data.collect.domain.SegMentInfo;
 import com.iwhalecloud.data.collect.domain.SegStationInfo;
 import com.iwhalecloud.data.collect.domain.StationRouteCorrelation;
@@ -26,8 +27,15 @@ public interface SegStationInfoDao {
      * @return
      */
     int batchInsertStation(List<StationRouteCorrelation> listItm);
-
+    int batchInsertAmap(@Param("list") List<ConvertAmapCoordinate> list);
+    int insertAmap(@Param("item") ConvertAmapCoordinate map);
     int selectCheckStation();
     int batchDelete();
     int batchDeleteCt();
+    List<SegStationInfo> selectCheckList();
+
+    List<ConvertAmapCoordinate> queryById(@Param("stationId") String stationId);
+    List<ConvertAmapCoordinate> selectStationList();
+    int selectStationCount();
+    int batchDeleteAmapList();
 }

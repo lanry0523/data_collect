@@ -68,9 +68,38 @@
             )
         </foreach>
     </insert>
+    <insert id="batchInsertAmap" parameterType="java.util.List">
+        INSERT INTO convert_amap_coordinate (station_id,longitude,latitude) VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.stationId},
+            #{item.longitude},
+            #{item.latitude}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertAmap" parameterType="com.iwhalecloud.data.collect.domain.ConvertAmapCoordinate">
+        INSERT INTO convert_amap_coordinate
+        (station_id,longitude,latitude) VALUES (#{item.stationId},#{item.longitude},#{item.latitude})
+    </insert>
 
+    <select id="queryById" resultType="com.iwhalecloud.data.collect.domain.ConvertAmapCoordinate">
+        select * from convert_amap_coordinate where station_id = #{stationId}
+    </select>
+    <select id="selectStationList"  resultType="com.iwhalecloud.data.collect.domain.ConvertAmapCoordinate">
+        select * from convert_amap_coordinate
+    </select>
+    <select id="selectStationCount"  resultType="int">
+        select count(*) from convert_amap_coordinate
+    </select>
+    <delete id="batchDeleteAmapList">
+        delete from convert_amap_coordinate
+    </delete>
     <select id="selectCheckStation"  resultType="int">
         select count(*) from seg_station_info
+    </select>
+    <select id="selectCheckList"  resultMap="BaseResultMap">
+        select * from seg_station_info where station_id = "66201706090919304074_2"
     </select>
     <delete id="batchDelete">
         delete from seg_station_info

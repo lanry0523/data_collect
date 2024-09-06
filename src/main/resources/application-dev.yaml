@@ -11,7 +11,7 @@ spring:
       password: 1234qwer
       initial-size: 1
       min-idle: 1
-      max-active: 3
+      max-active: 50
       max-wait: 60000
       min-evictable-idle-time-millis: 300000
       validation-query: SELECT 1 FROM dual
@@ -47,4 +47,11 @@ logging:
     com.iwhalecloud.data.collect.dao: info
 
 schedule:
-  cron: 0 */5 * * * ?
+  cron: 0 0 6 * * *
+
+amap:
+  key: 638b4c34e42c1c7233a74821456af5e1
+  url: https://restapi.amap.com/v3/assistant/coordinate/convert
+bus:
+  allUrl: http://120.238.166.245:62100/BusService/Query_AllSubRouteData/
+  routUrl: http://120.238.166.245:62100/BusService/Query_RouteStatData/

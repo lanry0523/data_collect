@@ -8,6 +8,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iwhalecloud.data.collect.domain.ConvertAmapCoordinate;
 import com.iwhalecloud.data.collect.domain.RouteStationInfo;
 import com.iwhalecloud.data.collect.domain.SegMentInfo;
 import com.iwhalecloud.data.collect.domain.SegStationInfo;
@@ -517,19 +518,10 @@ public class HttpClientUtils {
 
          **/
 
-        int nThreads = 10;
-        int size = 20000;
-        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-        for(int i = 0; i < nThreads; i++){
-            //final List<SegStationInfo> rstList = ssf.subList(size / nThreads * i,size / nThreads * (i+1));
-            log.info("批量入库开始,{} 当前入库数量,{}",i,0);
-            executorService.execute(()->{
-
-                System.out.println("成功入库数量：");
-            });
-        }
-        executorService.shutdown();
-
-
+        Set<Integer> idList = new HashSet<>();
+        idList.add(22601501);
+        idList.add(22615101);
+        idList.add(20601301);
+        System.out.println(idList.contains(22601501));
     }
 }
