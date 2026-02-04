@@ -162,6 +162,7 @@ public class BusDataServiceImpl implements BusDataService {
                                             ssfInfo.setDualSerial(ss.getDualSerial());
                                             ssfInfo.setStationMemo(ss.getStationName());
                                             ssfInfo.setSngserialId(ss.getSngserialId());
+                                            ssfInfo.setStationMemo(ss.getStationMEMO());
                                             ssf.add(ssfInfo);
                                             ii +=1;
                                             log.info("站点数量;,{}",ii);
